@@ -50,7 +50,7 @@ export const App: React.FC = () => {
         }
     }
 
-    const generatePlayers = async(inputValue?: number | null) => {
+    const generatePlayers = (inputValue?: number | null) => {
         if (!inputValue) inputValue = 8
         if (typeof(inputValue) === "number") {
             if (inputValue <= 1) inputValue = 2
@@ -199,7 +199,7 @@ export const App: React.FC = () => {
                         console.log(value)
                         setValue(value)
                     }
-                }}
+                    }}
             />
              <button
                 onMouseDown={() => {
