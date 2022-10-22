@@ -2,6 +2,7 @@ import "./App.scss"
 import surnamesList from "./surnames.json"
 import { useEffect, useRef, useState } from "react"
 import { random } from "./utils/random"
+import { resolve } from "node:path/win32"
 // import {PlayersBlock} from "./components/players-block/players-block"
 
 
@@ -37,6 +38,8 @@ export const App: React.FC = () => {
         children: null
     })
 
+    const [value, setValue] = useState<number | null>(null)
+
     const createPlayer = (): Player => {
         const randomValue: number = random(1, 769)
         const id = `${randomValue}`
@@ -47,7 +50,7 @@ export const App: React.FC = () => {
         }
     }
 
-    const generatePlayers = (inputValue?: number | null) => {
+    const generatePlayers = async(inputValue?: number | null) => {
         if (!inputValue) inputValue = 8
         if (typeof(inputValue) === "number") {
             if (inputValue <= 1) inputValue = 2
@@ -64,7 +67,7 @@ export const App: React.FC = () => {
             }
         }
 
-        setPlayers([...result])
+       setPlayers([...result])
     }
 
     const shuffle = (players: Array<object>): Array<Player> => {
@@ -81,7 +84,7 @@ export const App: React.FC = () => {
     const mixPlayers = (): void => {
         if(!players) return
         if(round && round > 1) return
-        setPlayers(()=>[...shuffle(players)])
+        setPlayers(() => [...shuffle(players)])
     }
 
     const battle = (players: Array<Player> | null | undefined): Array<Player> | null => {
@@ -133,70 +136,53 @@ export const App: React.FC = () => {
                     }
                 }
             }
-            console.log(prev)
             return prev
         })
     }
 
-    // default 8 players
     useEffect(() => {
         generatePlayers()
     }, [])
 
     useEffect(() => {
-        if (players) {
-            setBracket(prev => ({
-                ...prev,
-                name: "Tournament",
-                children: [{
-                    name: "start place",
-                    players: [...players],
-                    children: null
-                }]
-            }))
-        }
+        setBracket(prev => ({
+            ...prev,
+            name: "Tournament",
+            children: [{
+                name: "start place",
+                players: players ? [...players] : null,
+                children: null
+            }]
+        }))
     }, [players])
 
     useEffect(() => {
+        setRound(prev => prev ? prev + 1 : 1)
+    }, [])
+
+    useEffect(() => {
+        if(prevBracket?.players && prevBracket.players.length > 2) {
+            setRound(prev => prev ? prev + 1 : 1)
+        }
+    }, [prevBracket])
+
+    useEffect(() => {
+        if(round) {
+            insertResult()
+        }
         console.log(bracket)
-        // if (bracket.children) {
-        //     setRound(prev => prev ? prev + 1 : 1)
-        // }
+    }, [round])
+
+    useEffect(() => {
+        if(bracket) {
+            console.log(bracket)
+        }
     }, [bracket])
 
-
-
-
-
-    // useEffect(() => {
-    //     refInputNumberOfPlayers!.current!.valueAsNumber = 8
-    //     setPlayers(() => generatePlayers())
-    //     setRound(prev => prev ? prev + 1 : 1)
-    // }, [])
-
-    // useEffect(() => {
-    //     setBracket(prev => ({
-    //         ...prev,
-    //         name: "Tournament",
-    //         children: [{
-    //             name: "start place",
-    //             players: players ? [...players] : null,
-    //             children: null
-    //         }]
-    //     }))
-    // }, [players])
-
-    // useEffect(() => {
-    //     if (typeof(round) === "number" && round > 0) {
-    //         insertResult()
-    //     }
-    // }, [round])
-
-    // useEffect(() => {
-    //     console.log(bracket)
-    // }, [bracket, setBracket])
-
-
+    useEffect(() => {
+        setRound(null)
+        generatePlayers(refInputNumberOfPlayers!.current!.valueAsNumber)
+    }, [value])
 
     return (
         <div>
@@ -207,20 +193,21 @@ export const App: React.FC = () => {
                 min={2}
                 max={64}
                 ref={refInputNumberOfPlayers}
+                onChange={() => {
+                    const value = refInputNumberOfPlayers.current?.valueAsNumber
+                    if(value) {
+                        console.log(value)
+                        setValue(value)
+                    }
+                }}
             />
-             {/* <button
+             <button
                 onMouseDown={() => {
-                    if(!bracket?.children) return
-                    if(prevBracket?.players && prevBracket?.players?.length > 0 && prevBracket?.players?.length < 3) return
-                    setRound(prev => typeof(prev) === "number" ? prev + 1 : 1)
+                    if(round) return
+                    setRound(prev => prev ? prev + 1 : 1)
                 }}
-            >next</button> */}
-            {/* <button
-                onMouseDown={() => {
-                    setRound(null)
-                    setPlayers(() => [...generatePlayers(refInputNumberOfPlayers!.current!.valueAsNumber)])
-                }}
-            >accept</button> */}
+            >start</button>
+
             <button
                 onMouseDown={() => mixPlayers()}
             >randomize</button>
