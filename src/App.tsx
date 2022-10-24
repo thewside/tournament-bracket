@@ -2,27 +2,24 @@ import "./App.scss"
 import surnamesList from "./surnames.json"
 import { useEffect, useRef, useState } from "react"
 import { random } from "./utils/random"
-import { resolve } from "node:path/win32"
-// import {PlayersBlock} from "./components/players-block/players-block"
-
+import { PlayersBlock } from "./components/players-block/players-block"
 
 interface Player {
     id?: string
     name?: string
+    color?: number | null
 }
 
 interface Bracket {
     name?: string | null
-    players?: Array<object> | null
-    children?: Array<object> | null | undefined
+    players?: Array<Player> | null
+    children?: Array<Bracket> | null | undefined
 }
 
 interface Main {
     name?: string | null
     children?: Array<Bracket> | null
-    // playerList?: Array<Player> | null
 }
-
 
 export const App: React.FC = () => {
     const refInputNumberOfPlayers = useRef<HTMLInputElement | null>(null)
@@ -33,7 +30,7 @@ export const App: React.FC = () => {
         children: []
     })
     const [players, setPlayers] = useState<Array<Player> | null>(null)
-    const [bracket, setBracket] = useState<Main | Bracket>({
+    const [bracket, setBracket] = useState<Main>({ // | Bracket
         name: null,
         children: null
     })
@@ -46,7 +43,8 @@ export const App: React.FC = () => {
         const name: string = surnamesList.surnames[randomValue]
         return {
             id: id,
-            name: name
+            name: name,
+            color: null
         }
     }
 
@@ -60,14 +58,16 @@ export const App: React.FC = () => {
         const result: Array<Player> = []
         for (let i = 0; i < inputValue; i++) {
             let player = createPlayer()
+            player.color = i
+
             if(result.indexOf(player) > -1) {
                 player = createPlayer()
             } else {
                 result.push(player)
             }
         }
-
-       setPlayers([...result])
+        console.log(result)
+        setPlayers([...result])
     }
 
     const shuffle = (players: Array<object>): Array<Player> => {
@@ -95,7 +95,7 @@ export const App: React.FC = () => {
             if(!pair[1]) {
                 result.push(pair[0])
             } else {
-                result.push(pair[random(0, 1)])
+                result.push(pair[Math.floor(random(0, 2))])
             }
             if(players.length > 1) {
                 i += 1
@@ -185,7 +185,7 @@ export const App: React.FC = () => {
     }, [value])
 
     return (
-        <div>
+        <div className="main">
             <div>Bracket size:</div>
             <input
                 type="number"
@@ -207,11 +207,10 @@ export const App: React.FC = () => {
                     setRound(prev => prev ? prev + 1 : 1)
                 }}
             >start</button>
-
             <button
                 onMouseDown={() => mixPlayers()}
             >randomize</button>
-            {/* <PlayersBlock bracket={bracket}/> */}
+            <PlayersBlock bracket={bracket}/>
         </div>
     )
 }
