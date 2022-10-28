@@ -36,6 +36,7 @@ export const App: React.FC = () => {
     })
 
     const [value, setValue] = useState<number | null>(null)
+    const [marginBlock, setMarginBlock] = useState<number>(0)
 
     const createPlayer = (): Player => {
         const randomValue: number = random(1, 769)
@@ -66,7 +67,6 @@ export const App: React.FC = () => {
                 result.push(player)
             }
         }
-        console.log(result)
         setPlayers([...result])
     }
 
@@ -140,6 +140,10 @@ export const App: React.FC = () => {
         })
     }
 
+    const marginHandler = (num: number): void => {
+        setMarginBlock(prev => prev + num)
+    }
+
     useEffect(() => {
         generatePlayers()
     }, [])
@@ -170,14 +174,13 @@ export const App: React.FC = () => {
         if(round) {
             insertResult()
         }
-        console.log(bracket)
     }, [round])
 
-    useEffect(() => {
-        if(bracket) {
-            console.log(bracket)
-        }
-    }, [bracket])
+    // useEffect(() => {
+    //     if(bracket) {
+    //         console.log(bracket)
+    //     }
+    // }, [bracket])
 
     useEffect(() => {
         setRound(null)
@@ -196,7 +199,6 @@ export const App: React.FC = () => {
                 onChange={() => {
                     const value = refInputNumberOfPlayers.current?.valueAsNumber
                     if(value) {
-                        console.log(value)
                         setValue(value)
                     }
                     }}
@@ -210,7 +212,11 @@ export const App: React.FC = () => {
             <button
                 onMouseDown={() => mixPlayers()}
             >randomize</button>
-            <PlayersBlock bracket={bracket}/>
+            <PlayersBlock
+                margin={marginBlock}
+                setMargin={marginHandler}
+                bracket={bracket}
+            />
         </div>
     )
 }

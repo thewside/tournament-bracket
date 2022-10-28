@@ -1,4 +1,5 @@
 import "./players-bracket.scss"
+import { colors } from "../../colors"
 
 interface Player {
     id?: string
@@ -10,18 +11,21 @@ interface Bracket {
     name?: string | null
     players?: Array<Player> | null
     children?: Array<Bracket> | null
+    style?: React.CSSProperties | string | number
 }
 
-export const PlayersBracket: React.FC<Bracket> = ({name, players}) => {
+export const PlayersBracket: React.FC<Bracket> = ({name, players, style}) => {
     return (
         <div className="bracket-stage">
             <div className="name">
                 <h1>{name}</h1>
             </div>
-            <div className="players">
+            <div className="players" style={style}>
                 {players?.map((item, index) => {
-                    let color = item.color === 0 ? "light" : "dark"
-                    return <h1 className={color} key={index}>{item.name}</h1>
+                    const properties: React.CSSProperties = {
+                        backgroundColor: colors[item.color || 0].rgb,
+                    }
+                    return <h1 style={properties} key={index}>{item.name}<br/>{item.id}</h1>
                 })}
             </div>
         </div>

@@ -13,106 +13,10 @@ export const colors: Array<Color> = [
       families: ["red", "brown"]
     },
     {
-      name: "LIGHTCORAL",
-      hex: "#F08080",
-      rgb: "RGB(240, 128, 128)",
-      families: ["red", "pink", "coral", "light"]
-    },
-    {
-      name: "SALMON",
-      hex: "#FA8072",
-      rgb: "RGB(250, 128, 114)",
-      families: ["red", "pink", "orange", "salmon"]
-    },
-    {
-      name: "DARKSALMON",
-      hex: "#E9967A",
-      rgb: "RGB(233, 150, 122)",
-      families: ["red", "pink", "orange", "salmon", "dark"]
-    },
-    {
-      name: "LIGHTSALMON",
-      hex: "#FFA07A",
-      rgb: "RGB(255, 160, 122)",
-      families: ["red", "pink", "orange", "salmon", "light"]
-    },
-    {
-      name: "CRIMSON",
-      hex: "#DC143C",
-      rgb: "RGB(220, 20, 60)",
-      families: ["red"]
-    },
-    {
-      name: "RED",
-      hex: "#FF0000",
-      rgb: "RGB(255, 0, 0)",
-      families: ["red"]
-    },
-    {
-      name: "DARKRED",
-      hex: "#8B0000",
-      rgb: "RGB(139, 0, 0)",
-      families: ["red", "dark"]
-    },
-    {
-      name: "PINK",
-      hex: "#FFC0CB",
-      rgb: "RGB(255, 192, 203)",
-      families: ["pink"]
-    },
-    {
       name: "LIGHTPINK",
       hex: "#FFB6C1",
       rgb: "RGB(255, 182, 193)",
       families: ["pink", "light"]
-    },
-    {
-      name: "HOTPINK",
-      hex: "#FF69B4",
-      rgb: "RGB(255, 105, 180)",
-      families: ["pink", "hot"]
-    },
-    {
-      name: "DEEPPINK",
-      hex: "#FF1493",
-      rgb: "RGB(255, 20, 147)",
-      families: ["pink", "deep"]
-    },
-    {
-      name: "MEDIUMVIOLETRED",
-      hex: "#C71585",
-      rgb: "RGB(199, 21, 133)",
-      families: ["pink", "purple", "violet", "medium"]
-    },
-    {
-      name: "PALEVIOLETRED",
-      hex: "#DB7093",
-      rgb: "RGB(219, 112, 147)",
-      families: ["pink", "pale", "violet"]
-    },
-    {
-      name: "CORAL",
-      hex: "#FF7F50",
-      rgb: "RGB(255, 127, 80)",
-      families: ["orange", "coral"]
-    },
-    {
-      name: "TOMATO",
-      hex: "#FF6347",
-      rgb: "RGB(255, 99, 71",
-      families: ["orange", "red"]
-    },
-    {
-      name: "ORANGERED",
-      hex: "#FF4500",
-      rgb: "RGB(255, 69, 0)",
-      families: ["orange", "red"]
-    },
-    {
-      name: "DARKORANGE",
-      hex: "#FF8C00",
-      rgb: "RGB(255, 140, 0)",
-      families: ["orange", "dark"]
     },
     {
       name: "ORANGE",
@@ -125,66 +29,6 @@ export const colors: Array<Color> = [
       hex: "#FFD700",
       rgb: "RGB(255, 215, 0)",
       families: ["yellow"]
-    },
-    {
-      name: "YELLOW",
-      hex: "#FFFF00",
-      rgb: "RGB(255, 255, 0)",
-      families: ["yellow"]
-    },
-    {
-      name: "LIGHTYELLOW",
-      hex: "#FFFFE0",
-      rgb: "RGB(255, 255, 224)",
-      families: ["yellow", "light"]
-    },
-    {
-      name: "LEMONCHIFFON",
-      hex: "#FFFACD",
-      rgb: "RGB(255, 250, 205)",
-      families: ["yellow", "lemon"]
-    },
-    {
-      name: "LIGHTGOLDENRODYELLOW",
-      hex: "#FAFAD2",
-      rgb: "RGB(250, 250, 210)",
-      families: ["yellow", "light", "goldenrod", "tan"]
-    },
-    {
-      name: "PAPAYAWHIP",
-      hex: "#FFEFD5",
-      rgb: "RGB(255, 239, 213)",
-      families: ["pink", "tan"]
-    },
-    {
-      name: "MOCCASIN",
-      hex: "#FFE4B5",
-      rgb: "RGB(255, 228, 181)",
-      families: ["pink", "tan"]
-    },
-    {
-      name: "PEACHPUFF",
-      hex: "#FFDAB9",
-      rgb: "RGB(255, 218, 185)",
-      families: ["pink", "orange", "peach"]
-    },
-    {
-      name: "PALEGOLDENROD",
-      hex: "#EEE8AA",
-      rgb: "RGB(238, 232, 170)",
-      families: ["yellow", "tan", "pale", "goldenrod"]
-    },
-    {
-      name: "KHAKI",
-      hex: "#F0E68C",
-      rgb: "RGB(240, 230, 140)",
-      families: ["yellow", "tan", "khaki"]
-    },
-    {
-      name: "DARKKHAKI",
-      hex: "#BDB76B",
-      rgb: "RGB(189, 183, 107)",
-      families: ["yellow", "tan", "khaki", "dark"]
     },
     {
       name: "LAVENDER",
