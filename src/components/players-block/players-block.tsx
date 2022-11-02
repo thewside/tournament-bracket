@@ -6,43 +6,59 @@ interface Player {
     name?: string
 }
 
+interface Pair {
+    playerOne?: Player | null
+    playerTwo?: Player | null
+}
+
 interface Bracket {
     name?: string | null
     players?: Array<Player> | null
     children?: Array<Bracket> | null
+    pairs?: Array<Pair | null>
 }
-
 
 interface Main {
     bracket?: Bracket
-    margin?: number
-    setMargin(num: number): void
 }
 
-export const PlayersBlock: React.FC<Main> = ({margin, setMargin, bracket}) => {
-    const startBracket: Bracket | null | undefined = bracket?.children?.[0]
-    const getBracketBlocks = (): Array<Bracket> | null => {
-        const rounds: Array<Bracket> = []
+export const PlayersBlock: React.FC<Main> = ({bracket}) => {
+    const startBracket: Bracket | null = bracket?.children?.[0] || null
+    const getBracketBlocks = () => {
+        const result: Array<Bracket> | null = []
+
         let next: Bracket | null | undefined = startBracket
+        let count = 0
+
         while(typeof(next) === "object") {
-            rounds.push(next)
+            const pairContainer: Array<Pair> = []
+            if (next?.players) {
+                for (let i = 0; i < next.players!.length; i++) {
+                    if (i % 2 === 0) {
+                        const pair: Pair = {
+                            playerOne: next.players?.[i] || null,
+                            playerTwo: next.players?.[i + 1] || null
+                        }
+                        pairContainer.push(pair)
+                    }
+                }
+            }
+            result.push({...next, pairs: pairContainer})
             next = next?.children?.[0]
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            count += 1
             if (!next) {
                 break
             }
         }
-        return rounds
+        return result
     }
 
     return (
         <div className="players-block">
-            {getBracketBlocks()?.map((item, index) => {
-                console.log(margin)
-                return <PlayersBracket key={index} name={item.name} players={item.players}/>
+            {getBracketBlocks()?.map((round, index) => {
+                return <PlayersBracket key={index} round={round} isFirst={index === 0 ? true : false}/>
             })}
-            <button onClickCapture={() => setMargin(10)}>qqq</button>
         </div>
     )
 }
-
-    {/* <PlayersBracket players={startBracket?.players}/> */}

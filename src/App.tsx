@@ -13,7 +13,7 @@ interface Player {
 interface Bracket {
     name?: string | null
     players?: Array<Player> | null
-    children?: Array<Bracket> | null | undefined
+    children?: Array<Bracket> | null
 }
 
 interface Main {
@@ -36,7 +36,6 @@ export const App: React.FC = () => {
     })
 
     const [value, setValue] = useState<number | null>(null)
-    const [marginBlock, setMarginBlock] = useState<number>(0)
 
     const createPlayer = (): Player => {
         const randomValue: number = random(1, 769)
@@ -140,10 +139,6 @@ export const App: React.FC = () => {
         })
     }
 
-    const marginHandler = (num: number): void => {
-        setMarginBlock(prev => prev + num)
-    }
-
     useEffect(() => {
         generatePlayers()
     }, [])
@@ -158,6 +153,7 @@ export const App: React.FC = () => {
                 children: null
             }]
         }))
+        // console.log(players)
     }, [players])
 
     useEffect(() => {
@@ -212,11 +208,7 @@ export const App: React.FC = () => {
             <button
                 onMouseDown={() => mixPlayers()}
             >randomize</button>
-            <PlayersBlock
-                margin={marginBlock}
-                setMargin={marginHandler}
-                bracket={bracket}
-            />
+            <PlayersBlock bracket={bracket}/>
         </div>
     )
 }
