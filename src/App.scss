@@ -1,5 +1,7 @@
-.main {
-    min-height: 100%;
+html body .main{
     height: 100%;
-    overflow: auto;
+}
+body {
+    background-image: url("./images/background.webp");
+    background-size: contain;
 }

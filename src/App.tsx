@@ -1,13 +1,14 @@
 import "./App.scss"
 import surnamesList from "./surnames.json"
-import { useEffect, useRef, useState } from "react"
+import { createContext, useEffect, useRef, useState } from "react"
 import { random } from "./utils/random"
 import { PlayersBlock } from "./components/players-block/players-block"
 
 interface Player {
     id?: string
     name?: string
-    color?: number | null
+    position?: number | null
+    color?: number
 }
 
 interface Bracket {
@@ -20,6 +21,12 @@ interface Main {
     name?: string | null
     children?: Array<Bracket> | null
 }
+
+interface AppContextInterface {
+    players?(dragPlayer: number, dropPlayer: number): void
+}
+
+export const HandlerPlayerContext = createContext<AppContextInterface | null>(null)
 
 export const App: React.FC = () => {
     const refInputNumberOfPlayers = useRef<HTMLInputElement | null>(null)
@@ -44,7 +51,7 @@ export const App: React.FC = () => {
         return {
             id: id,
             name: name,
-            color: null
+            position: null
         }
     }
 
@@ -58,6 +65,7 @@ export const App: React.FC = () => {
         const result: Array<Player> = []
         for (let i = 0; i < inputValue; i++) {
             let player = createPlayer()
+            player.position = i
             player.color = i
 
             if(result.indexOf(player) > -1) {
@@ -70,7 +78,7 @@ export const App: React.FC = () => {
     }
 
     const shuffle = (players: Array<object>): Array<Player> => {
-        const result: Array<object> = [...players]
+        const result: Array<Player> = [...players]
         for (let i = result.length - 1; i > 0; i--) {
             const j = random(0, i)
             const t = result[i]
@@ -83,6 +91,7 @@ export const App: React.FC = () => {
     const mixPlayers = (): void => {
         if(!players) return
         if(round && round > 1) return
+        console.log([...shuffle(players)])
         setPlayers(() => [...shuffle(players)])
     }
 
@@ -183,6 +192,27 @@ export const App: React.FC = () => {
         generatePlayers(refInputNumberOfPlayers!.current!.valueAsNumber)
     }, [value])
 
+    const handlerPlayersState = (dragPlayer: number, dropPlayer: number): void => {
+        if(!players) return
+        if(isNaN(dropPlayer)) return
+
+        if (players.length > 0) {
+            setPlayers((prev: Array<Player> | null): any => {
+                if(prev) {
+                    const result = [...prev]
+                    const temp = prev[dragPlayer]
+                    result.splice(dragPlayer, 1, prev[dropPlayer])
+                    result.splice(dropPlayer, 1, temp)
+                    result[dragPlayer].position = dragPlayer
+                    result[dropPlayer].position = dropPlayer
+                    return result
+                } else {
+                    return null
+                }
+            })
+        }
+    }
+
     return (
         <div className="main">
             <div>Bracket size:</div>
@@ -208,7 +238,9 @@ export const App: React.FC = () => {
             <button
                 onMouseDown={() => mixPlayers()}
             >randomize</button>
-            <PlayersBlock bracket={bracket}/>
+            <HandlerPlayerContext.Provider value={{players: handlerPlayersState}} >
+                <PlayersBlock bracket={bracket}/>
+            </HandlerPlayerContext.Provider>
         </div>
     )
 }
