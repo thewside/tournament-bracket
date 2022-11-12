@@ -1,50 +1,61 @@
-$playerWidth: 400px;
+$playerWidth: 220px;
 $playerHeight: 80px;
+$blockColor: rgba(0, 6, 6, 0.591);
 
 .bracket-stage{
     display: flex;
     flex-direction: column;
-    background-color: rgb(202, 227, 238);
-    width: $playerWidth;
+    height: auto;
+    width: 100%;
     margin: 10px;
 }
 .name {
-    font-size: 20px;
-    padding-left: 10px;
+    background-color: $blockColor;
+    color: rgb(255, 255, 255);
+    font-size: 1rem;
+    padding: 5px;
+    height: 100px;
+    text-align: center;
+    user-select: none;
 }
 
 .players{
+    width: $playerWidth;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    height: 100%;
     user-select: none;
+    height: 100%;
 }
 .pair-player-container {
     height: $playerHeight;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding: 10px;
+    background-color: $blockColor;
 }
 .pair {
-    width: $playerWidth;
+    width: 100%;
     height: 200px;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 .player {
-    width: $playerWidth;
+    width: 100%;
     padding-left: 10px;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.173);
+    font-size: 2.0rem;
 }
 .player-drag {
+    width: $playerWidth;
     position: absolute;
     pointer-events: none;
+    z-index: 999;
     &:active {
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.173);
     }
-    z-index: 999;
 }
 .lightened {
     cursor: pointer;

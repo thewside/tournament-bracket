@@ -1,4 +1,27 @@
+.main-block-container  {
+    background-color: rgba(104, 175, 104, 0.729);
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    top: 0;
+    left: 0;
+}
+.block-container {
+    background-color: rgba(255, 0, 0, 0.448);
+    height: 100%;
+}
 .players-block {
-    padding: 10px;
+    position: absolute;
+    z-index: 995;
     display: flex;
+    background-color: rgba(19, 56, 79, 0.418);
+    cursor: grab;
+}
+
+.block-slider {
+    position: relative;
+    z-index: 996;
+    width: 200px;
+    height: 30px;
 }

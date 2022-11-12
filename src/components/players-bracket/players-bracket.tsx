@@ -24,11 +24,12 @@ interface Bracket {
 }
 
 interface Main {
-    round: Bracket | null
-    isFirst: boolean
+    block?: HTMLDivElement | null
+    round?: Bracket | null
+    isFirst?: boolean
 }
 
-export const PlayersBracket: React.FC<Main> = ({ round, isFirst}) => {
+export const PlayersBracket: React.FC<Main> = ({block, round, isFirst}) => {
     const value = useContext(HandlerPlayerContext)
     const playerHandler = value?.players
     const refPlayer = useRef<HTMLHeadingElement | null>(null)
@@ -36,7 +37,9 @@ export const PlayersBracket: React.FC<Main> = ({ round, isFirst}) => {
         height: 0,
         width: 0,
         left: 0,
-        top: 0
+        top: 0,
+        blockLeft: 0,
+        blockTop: 0
     }
 
     useEffect(() => {
@@ -49,7 +52,7 @@ export const PlayersBracket: React.FC<Main> = ({ round, isFirst}) => {
                 left: options.left
             }
         }
-    })
+    }, [])
 
     const drag = (e: React.MouseEvent, item: Pair): void => {
         if(e.button > 0) return
@@ -59,17 +62,22 @@ export const PlayersBracket: React.FC<Main> = ({ round, isFirst}) => {
 
         const clickTarget = e.target as HTMLElement
         const options = clickTarget.getBoundingClientRect()
+        const blockProperties = block!.getBoundingClientRect()
+
         properties = {
             ...properties,
-            top: options.top
+            top: options.top,
+            blockLeft: blockProperties.left,
+            blockTop: blockProperties.top
         }
-        const color = clickTarget.style.backgroundColor
 
+        const color = clickTarget.style.backgroundColor
         const dragPlayer = Number(clickTarget.dataset.playerid)
         const shiftX = e.clientX - properties.left
-        const shiftY = e.clientY - properties.top
+        const shiftY = Math.floor(e.clientY - properties.top)
+
         let posX = e.pageX - shiftX - clickTarget.offsetLeft
-        let posY = e.pageY - shiftY - clickTarget.offsetTop
+        let posY = e.pageY - shiftY - clickTarget.offsetTop 
 
         clickTarget.style.backgroundColor = color.slice(0, -1) + ", 0.7)"
         clickTarget.classList.add("player-drag")
@@ -77,14 +85,34 @@ export const PlayersBracket: React.FC<Main> = ({ round, isFirst}) => {
         const setPosition = (x: number, y: number): void => {
             clickTarget.style.transform = `translate(${x}px, ${y}px)`
         }
-
-
         setPosition(posX, posY)
+
+        const pageHeight = document.documentElement.clientHeight
+        const scrollHeight = Math.max(
+            document.body.scrollHeight, document.documentElement.scrollHeight,
+            document.body.offsetHeight, document.documentElement.offsetHeight,
+            document.body.clientHeight, document.documentElement.clientHeight
+        )
 
         const move = (e: MouseEvent): void => {
             posX = e.pageX - shiftX - clickTarget.offsetLeft
             posY = e.pageY - shiftY - clickTarget.offsetTop
             setPosition(posX, posY)
+            const scrollValue = 120
+            if(e.clientY - properties.height / 2 <= 0) {
+                // window.scrollTo({
+                //     top: window.pageYOffset - scrollValue,
+                //     behavior: "smooth"
+                // })
+                console.log(-1)
+            }
+            if(e.clientY + properties.height / 2 >= pageHeight) {
+                // window.scrollTo({
+                //     top: e.clientY + properties.height / 2 + window.pageYOffset > scrollHeight ? window.pageYOffset : window.pageYOffset + scrollValue,
+                //     behavior: "smooth"
+                // })
+                console.log(0)
+            }
         }
 
         const over = (e: MouseEvent): void => {
@@ -99,27 +127,19 @@ export const PlayersBracket: React.FC<Main> = ({ round, isFirst}) => {
             target.classList!.remove("lightened")
         }
 
-        const scroll = () => {
-            setPosition(
-                window.pageXOffset,
-                window.pageYOffset
-            )
-        }
-
         const drop = (e: MouseEvent): void => {
             window.removeEventListener("mouseover", over)
             window.removeEventListener("mouseout", out)
             window.removeEventListener("mousemove", move)
             window.removeEventListener("mouseup", drop)
-            window.removeEventListener("scroll", scroll)
-
-            const target = e.target as HTMLElement
-            const dropPlayer = Number(target.dataset.playerid)
             clickTarget.classList!.remove("player-drag")
             clickTarget.classList!.remove("lightened")
             clickTarget.style!.transform = `translate(${0}px, ${0}px)`
             clickTarget.style.backgroundColor = color
 
+            const target = e.target as HTMLElement
+            if(!target.dataset) return
+            const dropPlayer = Number(target.dataset.playerid)
             if(isFirst) playerHandler!(dragPlayer, dropPlayer)
             if(target.classList) {
                 target.classList!.remove("lightened")
@@ -130,7 +150,6 @@ export const PlayersBracket: React.FC<Main> = ({ round, isFirst}) => {
         window.addEventListener("mouseout", out)
         window.addEventListener("mousemove", move)
         window.addEventListener("mouseup", drop)
-        window.addEventListener("scroll", scroll)
     }
 
     return (
@@ -200,17 +219,16 @@ export const PlayersBracket: React.FC<Main> = ({ round, isFirst}) => {
     // })
 
 
-                       {/* {!isFirst ?<div>
-                            <svg height="210">
-                                <line x1="0" y1="0" x2="100" y2="0" style={{
-                                    stroke: "rgb(255,255,255)",
-                                    strokeWidth: "20px"
-                                }} />
-                            </svg>
-                            <svg height="210">
-                                <line x1="0" y1="0" x2="100" y2="0" style={{
-                                    stroke: "rgb(255,255,255)",
-                                    strokeWidth: "20px"
-                                }} />
-                            </svg>
-                        </div> : null} */}
+                        // {!isFirst ?<div>
+                        //     <svg height="210">
+                        //         <line x1="0" y1="0" x2="100" y2="0" style={{
+                        //             stroke: "rgb(255,255,255)",
+                        //             strokeWidth: "20px"
+                        //         }} />
+                        //     </svg>
+                        //     <svg height="210">
+                        //         <line x1="0" y1="0" x2="100" y2="0" style={{
+                        //             stroke: "rgb(255,255,255)",
+                        //             strokeWidth: "20px"
+                        //         }} />
+                        //    </svg>}

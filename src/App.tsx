@@ -85,13 +85,16 @@ export const App: React.FC = () => {
             result[i] = result[j]
             result[j] = t
         }
+        for(let i = 0; i < result.length; i++) {
+            result[i].position = i
+        }
+        console.log(result)
         return result as Array<Player>
     }
 
     const mixPlayers = (): void => {
         if(!players) return
         if(round && round > 1) return
-        console.log([...shuffle(players)])
         setPlayers(() => [...shuffle(players)])
     }
 
@@ -197,7 +200,7 @@ export const App: React.FC = () => {
         if(isNaN(dropPlayer)) return
 
         if (players.length > 0) {
-            setPlayers((prev: Array<Player> | null): any => {
+            setPlayers((prev: Array<Player> | null): Array<Player> | null => {
                 if(prev) {
                     const result = [...prev]
                     const temp = prev[dragPlayer]
@@ -229,16 +232,16 @@ export const App: React.FC = () => {
                     }
                     }}
             />
-             <button
-                onMouseDown={() => {
-                    if(round) return
-                    setRound(prev => prev ? prev + 1 : 1)
-                }}
+            <button
+               onMouseDown={() => {
+                   if(round) return
+                   setRound(prev => prev ? prev + 1 : 1)
+            }}
             >start</button>
             <button
                 onMouseDown={() => mixPlayers()}
             >randomize</button>
-            <HandlerPlayerContext.Provider value={{players: handlerPlayersState}} >
+            <HandlerPlayerContext.Provider value={{players: handlerPlayersState}}>
                 <PlayersBlock bracket={bracket}/>
             </HandlerPlayerContext.Provider>
         </div>
