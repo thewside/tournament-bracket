@@ -1,8 +1,8 @@
 import "./players-bracket.scss"
 import { colors } from "../../colors"
-import React, { useEffect, useRef } from "react"
-import { useContext } from "react"
+import React, { useRef, useContext } from "react"
 import { HandlerPlayerContext } from "../../App"
+import { click } from "@testing-library/user-event/dist/click"
 
 interface Player {
     id?: string
@@ -27,32 +27,23 @@ interface Main {
     block?: HTMLDivElement | null
     round?: Bracket | null
     isFirst?: boolean
+    isLast?: boolean | number
+    scale: number
 }
 
-export const PlayersBracket: React.FC<Main> = ({block, round, isFirst}) => {
+let properties = {
+    height: 0,
+    width: 0,
+    left: 0,
+    top: 0,
+    blockLeft: 0,
+    blockTop: 0
+}
+
+export const PlayersBracket: React.FC<Main> = ({block, round, isFirst, isLast, scale}) => {
     const value = useContext(HandlerPlayerContext)
     const playerHandler = value?.players
     const refPlayer = useRef<HTMLHeadingElement | null>(null)
-    let properties = {
-        height: 0,
-        width: 0,
-        left: 0,
-        top: 0,
-        blockLeft: 0,
-        blockTop: 0
-    }
-
-    useEffect(() => {
-        if(refPlayer.current){
-            const options = refPlayer.current.getBoundingClientRect()
-            properties = {
-                ...properties,
-                height: options.height,
-                width: options.width,
-                left: options.left
-            }
-        }
-    }, [])
 
     const drag = (e: React.MouseEvent, item: Pair): void => {
         if(e.button > 0) return
@@ -66,18 +57,18 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst}) => {
 
         properties = {
             ...properties,
+            height: options.height,
+            width: options.width,
+            left: options.left,
             top: options.top,
             blockLeft: blockProperties.left,
             blockTop: blockProperties.top
         }
 
-        const color = clickTarget.style.backgroundColor
-        const dragPlayer = Number(clickTarget.dataset.playerid)
         const shiftX = e.clientX - properties.left
         const shiftY = Math.floor(e.clientY - properties.top)
-
-        let posX = e.pageX - shiftX - clickTarget.offsetLeft
-        let posY = e.pageY - shiftY - clickTarget.offsetTop 
+        const color = clickTarget.style.backgroundColor
+        const dragPlayer = Number(clickTarget.dataset.playerid)
 
         clickTarget.style.backgroundColor = color.slice(0, -1) + ", 0.7)"
         clickTarget.classList.add("player-drag")
@@ -85,7 +76,7 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst}) => {
         const setPosition = (x: number, y: number): void => {
             clickTarget.style.transform = `translate(${x}px, ${y}px)`
         }
-        setPosition(posX, posY)
+        setPosition(0, 0)
 
         const pageHeight = document.documentElement.clientHeight
         const scrollHeight = Math.max(
@@ -95,23 +86,22 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst}) => {
         )
 
         const move = (e: MouseEvent): void => {
-            posX = e.pageX - shiftX - clickTarget.offsetLeft
-            posY = e.pageY - shiftY - clickTarget.offsetTop
+            const posX = (e.pageX - properties.left - shiftX) / scale
+            const posY = (e.pageY - properties.top - shiftY) / scale
             setPosition(posX, posY)
+
             const scrollValue = 120
             if(e.clientY - properties.height / 2 <= 0) {
                 // window.scrollTo({
                 //     top: window.pageYOffset - scrollValue,
                 //     behavior: "smooth"
                 // })
-                console.log(-1)
             }
             if(e.clientY + properties.height / 2 >= pageHeight) {
                 // window.scrollTo({
                 //     top: e.clientY + properties.height / 2 + window.pageYOffset > scrollHeight ? window.pageYOffset : window.pageYOffset + scrollValue,
                 //     behavior: "smooth"
                 // })
-                console.log(0)
             }
         }
 
@@ -126,6 +116,8 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst}) => {
             const target = e.target as Element
             target.classList!.remove("lightened")
         }
+
+
 
         const drop = (e: MouseEvent): void => {
             window.removeEventListener("mouseover", over)
@@ -151,7 +143,6 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst}) => {
         window.addEventListener("mousemove", move)
         window.addEventListener("mouseup", drop)
     }
-
     return (
         <div className="bracket-stage">
             <div className="name">
@@ -165,7 +156,8 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst}) => {
                         <div className="players">
                             <div className="pair">
                                 <div className="pair-player-container">
-                                    {item?.playerOne ? <h1
+                                    {item?.playerOne
+                                    ? <h1
                                         ref={isFirst && index === 0 ? refPlayer : null}
                                         className="player"
                                         style={{
@@ -178,19 +170,22 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst}) => {
                                         {item.playerOne.name}<br/>{item.playerOne.id}</h1> : <h1 style={{ backgroundColor: "grey"}}></h1>
                                     }
                                 </div>
-                                {item?.playerTwo ? <div className="pair-player-container">
-                                    {item?.playerTwo ? <h1
-                                        className="player"
-                                        style={{
-                                            backgroundColor: colors[item.playerTwo.color!].rgb,
-                                            cursor: isFirst && !round.children ? "pointer" : "default"
-                                        }}
-                                        data-playerid={typeof(item?.playerOne?.position) === "number" && isFirst ? item!.playerOne!.position + 1 : null}
-                                        onMouseDown={e => isFirst ? drag(e, item) : null}
-                                    >
-                                        {item.playerTwo.name}<br/>{item.playerTwo.id}</h1> : <h1 style={{ backgroundColor: "red"}}></h1>
-                                    }
-                                </div> : null}
+                                {item?.playerTwo
+                                  ? <div className="pair-player-container">
+                                        {item?.playerTwo ? <h1
+                                            className="player"
+                                            style={{
+                                                backgroundColor: colors[item.playerTwo.color!].rgb,
+                                                cursor: isFirst && !round.children ? "pointer" : "default"
+                                            }}
+                                            data-playerid={typeof(item?.playerOne?.position) === "number" && isFirst ? item!.playerOne!.position + 1 : null}
+                                            onMouseDown={e => isFirst ? drag(e, item) : null}
+                                        >
+                                            {item.playerTwo.name}<br/>{item.playerTwo.id}</h1> : <h1 style={{ backgroundColor: "red"}}></h1>
+                                        }
+                                    </div>
+                                  : isLast ? null : <div className={"pair-player-container"}></div> 
+                                }
                             </div>
                         </div>
                     </div>

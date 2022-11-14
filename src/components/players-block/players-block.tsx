@@ -1,6 +1,7 @@
 import "./players-block.scss"
 import React, { useEffect, useRef, useState } from "react"
 import { PlayersBracket } from "../players-bracket/players-bracket"
+import { parse } from "node:path/win32"
 
 interface Player {
     id?: string
@@ -26,16 +27,17 @@ interface Main {
 
 
 interface Pos {
-    x?: number
-    y?: number
-    scale?: number
-    panning?: boolean
-    start?: {startX?: number, startY?: number}
+    x: number
+    y: number
+    scale: number
+    start: {startX?: number, startY?: number}
 }
 
 let constProps = {
     offsetTop: 0
 }
+let panning = false
+
 export const PlayersBlock: React.FC<Main> = ({bracket}) => {
     const startBracket: Bracket | null = bracket?.children?.[0] || null
     const getBracketBlocks = () => {
@@ -67,7 +69,9 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
         return result
     }
 
-
+    const maxSlide = 150 // slider = maxSlide / 100
+    const minSlide = 10 // slider = maxSlide / 100
+    const startMultiplier = 4
 
     const containerRef = useRef<HTMLInputElement | null>(null)
     const [pos, setPos] = useState<Pos>({
@@ -79,7 +83,16 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
             startY: 0
         }
     })
-    let panning = false
+    useEffect(() => {
+        const screenWidth = document.body.clientWidth
+        setPos(prev => ({
+            ...prev,
+                x: screenWidth / 3,
+                scale: minSlide / 100 * startMultiplier
+        }))
+        sliderRef.current!.valueAsNumber = minSlide * startMultiplier
+    }, [])
+
     const drag = (e: React.MouseEvent): void => {
         if(e.button > 0) return
         const clickTarget = e.target as HTMLElement
@@ -143,17 +156,25 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
             }
         }
 
+        console.log(e.deltaY)
+
+        // +108 or -108
         const delta = e.deltaY * -0.001
-        const newScale = pos.scale! + delta
+        console.log(pos.scale)
+        console.log(delta)
+        let newScale = pos.scale! + delta
+
+        if(newScale < minSlide / 100) {
+            newScale = minSlide / 100
+        }
+        if(newScale > maxSlide / 100) {
+            newScale = maxSlide / 100
+        }
+
         const ratio = 1 - newScale / pos.scale!
         const newX = pos.x! + (e.clientX - pos.x!) * ratio
         const newY = pos.y! + (e.clientY - pos.y! - containerRef.current!.offsetTop) * ratio
 
-        if(newScale < 0.4) {
-            return
-        }else if(newScale > 5) {
-            return
-        }
         setPos(prev => ({
             ...prev,
                 scale: newScale,
@@ -166,13 +187,13 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
     const sliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPos(prev => ({
             ...prev,
-                scale: e.target.valueAsNumber / 100,
+                scale: e.target.valueAsNumber / 100
         }))
     }
 
     return (
         <div className="main-block-container">
-            <input type="range" min="40" max="500" step="1"
+            <input type="range" min={minSlide} max={maxSlide}
                 ref={sliderRef}
                 className="block-slider"
                 onChange={sliderChange}
@@ -185,12 +206,14 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
                     onMouseDown={drag}
                     style={{transformOrigin: "0 0", transform: `translate(${pos.x}px, ${pos.y}px) scale(${pos.scale})`}}
                 >
-                    {getBracketBlocks()?.map((round, index) => {
+                    {getBracketBlocks()?.map((round, index, arr) => {
                         return <PlayersBracket
                             key={index}
                             block={containerRef.current}
                             round={round}
                             isFirst={index === 0 ? true : false}
+                            isLast={(index > 0 && index === arr.length - 1) ? true : false}
+                            scale={pos.scale}
                         />
                     })}
                 </div>
