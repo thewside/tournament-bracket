@@ -2,7 +2,6 @@ import "./players-bracket.scss"
 import { colors } from "../../colors"
 import React, { useRef, useContext } from "react"
 import { HandlerPlayerContext } from "../../App"
-import { click } from "@testing-library/user-event/dist/click"
 
 interface Player {
     id?: string
@@ -37,73 +36,56 @@ let properties = {
     left: 0,
     top: 0,
     blockLeft: 0,
-    blockTop: 0
+    blockTop: 0,
+    scale: 0
+}
+
+const setPosition = (target: HTMLElement, x: number, y: number): void => {
+    target.style.transform = `translate(${x}px, ${y}px)`
 }
 
 export const PlayersBracket: React.FC<Main> = ({block, round, isFirst, isLast, scale}) => {
     const value = useContext(HandlerPlayerContext)
     const playerHandler = value?.players
     const refPlayer = useRef<HTMLHeadingElement | null>(null)
-
+    properties = {
+        ...properties,
+        scale: scale
+    }
     const drag = (e: React.MouseEvent, item: Pair): void => {
         if(e.button > 0) return
         if(typeof(item?.playerOne?.position) !== "number") return
         if(!isFirst) return
         if(round?.children) return
-
         const clickTarget = e.target as HTMLElement
         const options = clickTarget.getBoundingClientRect()
         const blockProperties = block!.getBoundingClientRect()
-
         properties = {
             ...properties,
             height: options.height,
             width: options.width,
             left: options.left,
-            top: options.top,
+            top: options.top + window.scrollY,
             blockLeft: blockProperties.left,
-            blockTop: blockProperties.top
+            blockTop: blockProperties.top,
         }
 
-        const shiftX = e.clientX - properties.left
-        const shiftY = Math.floor(e.clientY - properties.top)
+        let posX = 0
+        let posY = 0
+        let pageX = e.pageX
+        let pageY = e.pageY
+
+        const dragX = e.clientX + window.scrollX
+        const dragY = e.clientY + window.scrollY
+
+        let shiftX = dragX - properties.left
+        let shiftY = Math.floor(dragY - properties.top)
         const color = clickTarget.style.backgroundColor
         const dragPlayer = Number(clickTarget.dataset.playerid)
 
         clickTarget.style.backgroundColor = color.slice(0, -1) + ", 0.7)"
         clickTarget.classList.add("player-drag")
-
-        const setPosition = (x: number, y: number): void => {
-            clickTarget.style.transform = `translate(${x}px, ${y}px)`
-        }
-        setPosition(0, 0)
-
-        const pageHeight = document.documentElement.clientHeight
-        const scrollHeight = Math.max(
-            document.body.scrollHeight, document.documentElement.scrollHeight,
-            document.body.offsetHeight, document.documentElement.offsetHeight,
-            document.body.clientHeight, document.documentElement.clientHeight
-        )
-
-        const move = (e: MouseEvent): void => {
-            const posX = (e.pageX - properties.left - shiftX) / scale
-            const posY = (e.pageY - properties.top - shiftY) / scale
-            setPosition(posX, posY)
-
-            const scrollValue = 120
-            if(e.clientY - properties.height / 2 <= 0) {
-                // window.scrollTo({
-                //     top: window.pageYOffset - scrollValue,
-                //     behavior: "smooth"
-                // })
-            }
-            if(e.clientY + properties.height / 2 >= pageHeight) {
-                // window.scrollTo({
-                //     top: e.clientY + properties.height / 2 + window.pageYOffset > scrollHeight ? window.pageYOffset : window.pageYOffset + scrollValue,
-                //     behavior: "smooth"
-                // })
-            }
-        }
+        setPosition(clickTarget, posX / scale, posY / scale)
 
         const over = (e: MouseEvent): void => {
             const target = e.target as HTMLElement
@@ -117,17 +99,56 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst, isLast, s
             target.classList!.remove("lightened")
         }
 
+        let scrollMove = false
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        let timeout: ReturnType<typeof setTimeout> | null = null
+        let interval: ReturnType<typeof setInterval> | null = null
 
+        const delay = () => {
+            timeout = setTimeout(() => {
+                scrollMove = false
+                timeout = null
+                if(interval) clearInterval(interval)
+                console.log("stop")
+
+                setPosition(
+                    clickTarget,
+                    posX / properties.scale,
+                    posY / properties.scale
+                )
+            }, 300)
+        }
+        const move = (e: MouseEvent): void => {
+            pageY = e.pageY
+            pageX = e.pageX
+            posY = pageY - properties.top - shiftY
+            posX = pageX - properties.left - shiftX // - window.scrollX
+            setPosition(clickTarget, posX / properties.scale, posY / properties.scale)
+        }
+
+        const scroll = (e: Event) => {
+            if(scrollMove) {
+                if(interval) clearInterval(interval)
+                interval = null
+                return
+            }
+            scrollMove = true
+
+            delay()
+        }
 
         const drop = (e: MouseEvent): void => {
+            window.removeEventListener("scroll", scroll)
             window.removeEventListener("mouseover", over)
             window.removeEventListener("mouseout", out)
             window.removeEventListener("mousemove", move)
             window.removeEventListener("mouseup", drop)
+            console.log(clickTarget)
             clickTarget.classList!.remove("player-drag")
             clickTarget.classList!.remove("lightened")
-            clickTarget.style!.transform = `translate(${0}px, ${0}px)`
+            clickTarget.style!.transform = ""
             clickTarget.style.backgroundColor = color
+            if(interval) clearInterval(interval)
 
             const target = e.target as HTMLElement
             if(!target.dataset) return
@@ -138,6 +159,7 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst, isLast, s
             }
         }
 
+        window.addEventListener("scroll", scroll)
         window.addEventListener("mouseover", over)
         window.addEventListener("mouseout", out)
         window.addEventListener("mousemove", move)
@@ -148,9 +170,7 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst, isLast, s
             <div className="name">
                 <h1>{round?.name}</h1>
             </div>
-            <div
-                className="players"
-            >
+            <div className="players">
                 {round?.pairs?.map((item, index) => {
                     return <div key={index} className="pairContainer">
                         <div className="players">

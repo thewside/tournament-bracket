@@ -3,6 +3,8 @@ import surnamesList from "./surnames.json"
 import { createContext, useEffect, useRef, useState } from "react"
 import { random } from "./utils/random"
 import { PlayersBlock } from "./components/players-block/players-block"
+import config from "./bracket-config.json"
+const {minSize, maxSize, size} = config
 
 interface Player {
     id?: string
@@ -56,10 +58,10 @@ export const App: React.FC = () => {
     }
 
     const generatePlayers = (inputValue?: number | null) => {
-        if (!inputValue) inputValue = 8
+        if (!inputValue) inputValue = size
         if (typeof(inputValue) === "number") {
-            if (inputValue <= 1) inputValue = 2
-            if (inputValue >= 65) inputValue = 64
+            if (inputValue <= minSize) inputValue = minSize <= 0 ? 1 : minSize
+            if (inputValue >= maxSize) inputValue = maxSize
         }
 
         const result: Array<Player> = []
@@ -184,12 +186,6 @@ export const App: React.FC = () => {
         }
     }, [round])
 
-    // useEffect(() => {
-    //     if(bracket) {
-    //         console.log(bracket)
-    //     }
-    // }, [bracket])
-
     useEffect(() => {
         setRound(null)
         generatePlayers(refInputNumberOfPlayers!.current!.valueAsNumber)
@@ -215,10 +211,8 @@ export const App: React.FC = () => {
             })
         }
     }
-
     return (
         <div className="main">
-            <div>Bracket size:</div>
             <input
                 type="number"
                 placeholder="Введите количество участников"
@@ -230,7 +224,7 @@ export const App: React.FC = () => {
                     if(value) {
                         setValue(value)
                     }
-                    }}
+                }}
             />
             <button
                onMouseDown={() => {

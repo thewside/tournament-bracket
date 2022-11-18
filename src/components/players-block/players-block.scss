@@ -1,8 +1,6 @@
 .main-block-container  {
-    height: 100%;
+    height: auto;
     width: 100%;
-    overflow: hidden;
-    position: relative;
     top: 0;
     left: 0;
 }
@@ -13,7 +11,7 @@
     position: absolute;
     z-index: 995;
     display: flex;
-    background-color: rgba(19, 56, 79, 0.547);
+    background-color: rgb(72, 87, 96);
     cursor: grab;
 }
 

@@ -1,7 +1,6 @@
 import "./players-block.scss"
 import React, { useEffect, useRef, useState } from "react"
 import { PlayersBracket } from "../players-bracket/players-bracket"
-import { parse } from "node:path/win32"
 
 interface Player {
     id?: string
@@ -34,9 +33,17 @@ interface Pos {
 }
 
 let constProps = {
-    offsetTop: 0
+    offsetTop: 0,
+    scroll: 0
 }
+
+const scaleValue = 0.0002
+
 let panning = false
+let posX = 0
+let posY = 0
+let shiftX = 0
+let shiftY = 0
 
 export const PlayersBlock: React.FC<Main> = ({bracket}) => {
     const startBracket: Bracket | null = bracket?.children?.[0] || null
@@ -84,49 +91,46 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
         }
     })
     useEffect(() => {
-        const screenWidth = document.body.clientWidth
+        // const screenWidth = document.body.clientWidth
         setPos(prev => ({
             ...prev,
-                x: screenWidth / 3,
+                // x: screenWidth / 3,
                 scale: minSlide / 100 * startMultiplier
         }))
         sliderRef.current!.valueAsNumber = minSlide * startMultiplier
+        constProps = {
+            ...constProps,
+                offsetTop: containerRef.current!.getBoundingClientRect().top
+        }
     }, [])
 
     const drag = (e: React.MouseEvent): void => {
+        panning = false
         if(e.button > 0) return
         const clickTarget = e.target as HTMLElement
         if(clickTarget.dataset.playerid) return
-        panning = true
 
         const mainBlock = containerRef.current!
         const properties = mainBlock.getBoundingClientRect()
 
-        if(constProps.offsetTop === 0) {
-            constProps = {
-                ...constProps,
-                    offsetTop: properties.top
-            }
-        }
-
         // mouse coords witn shift left and top = 0, 0
-        const shiftX = e.clientX - properties.left
-        const shiftY = Math.floor(e.clientY - properties.top)
+        shiftX = e.clientX - properties.left
+        shiftY = Math.floor(e.clientY - properties.top)
 
-        let posX = e.pageX - shiftX
-        let posY = e.pageY - shiftY
+        posX = e.pageX - shiftX
+        posY = e.pageY - shiftY
 
         setPos(prev => ({
             ...prev,
                     ...prev.start,
                         startX: posX,
-                        startY: posY
+                        startY: posY - window.scrollY
         }))
 
         const move = (e: MouseEvent): void => {
             e.preventDefault()
-            if (!panning) return
-            posX = e.pageX - shiftX,
+            if(panning) return
+            posX = e.pageX - shiftX
             posY = e.pageY - shiftY
             setPos(prev => ({
                 ...prev,
@@ -136,32 +140,18 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
         }
 
         const drop = (): void => {
-            panning = false,
+            panning = false
             window.removeEventListener("mousemove", move)
             window.removeEventListener("mouseup", drop)
         }
-
         window.addEventListener("mousemove", move)
         window.addEventListener("mouseup", drop)
     }
 
     const sliderRef = useRef<HTMLInputElement | null>(null)
     const onScroll = (e: React.WheelEvent) => {
-        const mainBlock = containerRef.current!
-        const properties = mainBlock.getBoundingClientRect()
-        if(constProps.offsetTop === 0) {
-            constProps = {
-                ...constProps,
-                    offsetTop: properties.top
-            }
-        }
-
-        console.log(e.deltaY)
-
-        // +108 or -108
-        const delta = e.deltaY * -0.001
-        console.log(pos.scale)
-        console.log(delta)
+        panning = true
+        const delta = e.deltaY * -scaleValue
         let newScale = pos.scale! + delta
 
         if(newScale < minSlide / 100) {
@@ -173,8 +163,7 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
 
         const ratio = 1 - newScale / pos.scale!
         const newX = pos.x! + (e.clientX - pos.x!) * ratio
-        const newY = pos.y! + (e.clientY - pos.y! - containerRef.current!.offsetTop) * ratio
-
+        const newY = pos.y! + (e.clientY - pos.y! - containerRef.current!.offsetTop + window.scrollY - (newScale * 100)) * ratio
         setPos(prev => ({
             ...prev,
                 scale: newScale,
@@ -191,6 +180,12 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
         }))
     }
 
+    const stopScroll = (e: WheelEvent) => e.preventDefault()
+    useEffect(() => {
+        containerRef.current?.addEventListener("wheel", stopScroll, {passive: false})
+        return () => containerRef.current?.removeEventListener("wheel", stopScroll)
+    }, [])
+
     return (
         <div className="main-block-container">
             <input type="range" min={minSlide} max={maxSlide}
@@ -202,7 +197,7 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
                 <div
                     className="players-block"
                     ref={containerRef}
-                    onWheelCapture={onScroll}
+                    onWheel={onScroll}
                     onMouseDown={drag}
                     style={{transformOrigin: "0 0", transform: `translate(${pos.x}px, ${pos.y}px) scale(${pos.scale})`}}
                 >
@@ -222,12 +217,3 @@ export const PlayersBlock: React.FC<Main> = ({bracket}) => {
         </div>
     )
 }
-
-    // const coords = containerRef.current?.getBoundingClientRect()
-
-    // const sliderChange = (e: React.ChangeEvent): void => {
-    //     const container = containerRef.current
-    //     if(!container) return
-    //     const value = (e.target as HTMLInputElement).valueAsNumber / 100
-    //     const coords = containerRef.current?.getBoundingClientRect()
-    // }

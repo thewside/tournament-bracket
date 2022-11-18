@@ -1,12 +1,11 @@
 html body .main{
     height: 100%;
-    width: 100%;
-    overflow: hidden;
 }
 .main {
     z-index: 989;
 }
 body {
-    background-image: url("./images/background.webp");
+    background-color: rgb(0, 0, 0);
+    // background-image: url("./images/background.webp");
     background-size: contain;
 }
