@@ -1,6 +1,6 @@
 import "./players-bracket.scss"
 import { colors } from "../../colors"
-import React, { useRef, useContext } from "react"
+import React, { useRef, useContext, useEffect } from "react"
 import { HandlerPlayerContext } from "../../App"
 
 interface Player {
@@ -40,18 +40,37 @@ let properties = {
     scale: 0
 }
 
+let lineCoords = {
+    start: 0,
+    end: 0
+}
 const setPosition = (target: HTMLElement, x: number, y: number): void => {
     target.style.transform = `translate(${x}px, ${y}px)`
 }
 
+
 export const PlayersBracket: React.FC<Main> = ({block, round, isFirst, isLast, scale}) => {
     const value = useContext(HandlerPlayerContext)
     const playerHandler = value?.players
-    const refPlayer = useRef<HTMLHeadingElement | null>(null)
+    // const refPlayer = useRef<HTMLHeadingElement | null>(null)
     properties = {
         ...properties,
         scale: scale
     }
+
+    const refPlayers = useRef<HTMLDivElement | null>(null)
+    const playersRef = refPlayers?.current
+    const firstPlayerCoords = playersRef?.firstElementChild?.getBoundingClientRect()
+    const lastPlayerCoords = playersRef?.lastElementChild?.getBoundingClientRect()
+    // console.log(firstPlayerCoords?.top)
+    lineCoords = {
+        ...lineCoords,
+        start: lineCoords.start === 0 ? firstPlayerCoords?.top || 0 : 0,
+        end: lastPlayerCoords?.bottom || 100
+    }
+    console.log(lineCoords.start === 0 ? firstPlayerCoords?.top || 0 : 0)
+
+
     const drag = (e: React.MouseEvent, item: Pair): void => {
         if(e.button > 0) return
         if(typeof(item?.playerOne?.position) !== "number") return
@@ -69,7 +88,6 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst, isLast, s
             blockLeft: blockProperties.left,
             blockTop: blockProperties.top,
         }
-
         let posX = 0
         let posY = 0
         let pageX = e.pageX
@@ -78,8 +96,8 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst, isLast, s
         const dragX = e.clientX + window.scrollX
         const dragY = e.clientY + window.scrollY
 
-        let shiftX = dragX - properties.left
-        let shiftY = Math.floor(dragY - properties.top)
+        const shiftX = dragX - properties.left
+        const shiftY = Math.floor(dragY - properties.top)
         const color = clickTarget.style.backgroundColor
         const dragPlayer = Number(clickTarget.dataset.playerid)
 
@@ -158,7 +176,6 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst, isLast, s
                 target.classList!.remove("lightened")
             }
         }
-
         window.addEventListener("scroll", scroll)
         window.addEventListener("mouseover", over)
         window.addEventListener("mouseout", out)
@@ -167,71 +184,84 @@ export const PlayersBracket: React.FC<Main> = ({block, round, isFirst, isLast, s
     }
     return (
         <div className="bracket-stage">
-            <div className="name">
-                <h1>{round?.name}</h1>
-            </div>
-            <div className="players">
-                {round?.pairs?.map((item, index) => {
-                    return <div key={index} className="pairContainer">
-                        <div className="players">
-                            <div className="pair">
-                                <div className="pair-player-container">
-                                    {item?.playerOne
-                                    ? <h1
-                                        ref={isFirst && index === 0 ? refPlayer : null}
-                                        className="player"
-                                        style={{
-                                                backgroundColor: colors[item.playerOne.color!].rgb,
-                                                cursor: isFirst && !round.children ? "pointer" : "default"
-                                        }}
-                                        data-playerid={typeof(item?.playerOne?.position) === "number" && isFirst ? item?.playerOne?.position : null }
-                                        onMouseDown={e => isFirst ? drag(e, item) : null}
-                                    >
-                                        {item.playerOne.name}<br/>{item.playerOne.id}</h1> : <h1 style={{ backgroundColor: "grey"}}></h1>
-                                    }
-                                </div>
-                                {item?.playerTwo
-                                  ? <div className="pair-player-container">
-                                        {item?.playerTwo ? <h1
+            <div className="round-and-players">
+                <div className="name">
+                    <h1>{round?.name}</h1>
+                </div>
+                <div className="players" ref={refPlayers}>
+                    {round?.pairs?.map((item, index, arr) => {
+                        return <div key={index}>
+                            <div className="pair-and-stroke">
+                                {!isFirst
+                                ? <div className="pair-svg-hor-stroke">
+                                        <svg>
+                                            <line x1="0" y1="50%" x2="100%" y2="50%" style={{
+                                                stroke: "rgb(255,255,255)",
+                                                strokeWidth: "15px"
+                                            }} />
+                                        </svg>
+                                    </div>
+                                : null}
+                                <div className="pair">
+                                    <div className="pair-player-container">
+                                        {item?.playerOne
+                                        ? <h1
+                                            // ref={isFirst && index === 0 ? refPlayer : null}
                                             className="player"
                                             style={{
-                                                backgroundColor: colors[item.playerTwo.color!].rgb,
-                                                cursor: isFirst && !round.children ? "pointer" : "default"
+                                                    backgroundColor: colors[item.playerOne.color!].rgb,
+                                                    cursor: isFirst && !round.children ? "pointer" : "default"
                                             }}
-                                            data-playerid={typeof(item?.playerOne?.position) === "number" && isFirst ? item!.playerOne!.position + 1 : null}
+                                            data-playerid={typeof(item?.playerOne?.position) === "number" && isFirst ? item?.playerOne?.position : null }
                                             onMouseDown={e => isFirst ? drag(e, item) : null}
                                         >
-                                            {item.playerTwo.name}<br/>{item.playerTwo.id}</h1> : <h1 style={{ backgroundColor: "red"}}></h1>
+                                            {item.playerOne.name}<br/>{item.playerOne.id}</h1> : <h1 style={{ backgroundColor: "grey"}}></h1>
                                         }
                                     </div>
-                                  : isLast ? null : <div className={"pair-player-container"}></div> 
-                                }
+                                    {item?.playerTwo
+                                    ? <div className="pair-player-container">
+                                            {item?.playerTwo ? <h1
+                                                className="player"
+                                                style={{
+                                                    backgroundColor: colors[item.playerTwo.color!].rgb,
+                                                    cursor: isFirst && !round.children ? "pointer" : "default"
+                                                }}
+                                                data-playerid={typeof(item?.playerOne?.position) === "number" && isFirst ? item!.playerOne!.position + 1 : null}
+                                                onMouseDown={e => isFirst ? drag(e, item) : null}
+                                            >
+                                                {item.playerTwo.name}<br/>{item.playerTwo.id}</h1> : <h1 style={{ backgroundColor: "red"}}></h1>
+                                            }
+                                        </div>
+                                    : isLast ? null : <div className={"pair-player-container"}></div> 
+                                    }
+                                </div>
+                                {arr.length > 1 ? <div className="pair-svg-hor-stroke">
+                                        <svg>
+                                            <line x1="0" y1="50%" x2="100%" y2="50%" style={{
+                                                stroke: "rgb(255,255,255)",
+                                                strokeWidth: "15px"
+                                            }} />
+                                        </svg>
+                                </div>
+                                : null}
+
                             </div>
                         </div>
-                    </div>
-                })}
+                    })}
+                </div>
+            </div>
+            <div className="pair-svg-ver-stroke">
+                <svg>
+                    <line x1="0" y1={`${lineCoords.start}`} x2="0" y2={`${lineCoords.end}`}
+                    style={{
+                        stroke: "rgb(255,255,255)",
+                        strokeWidth: "30px"
+                    }} />
+                </svg>
             </div>
         </div>
     )
 }
-
-
-
-    // const refPlayer = useRef<HTMLHeadingElement | null>(null)
-    // let properties = {
-    //     height: 0,
-    //     width: 0
-    // }
-    // useEffect(()=>{
-    //     if(refPlayer.current){
-    //         const options = refPlayer.current.getBoundingClientRect()
-    //         properties = {
-    //             ...properties,
-    //             height: options.height,
-    //             width: options.width
-    //         }
-    //     }
-    // })
 
 
                         // {!isFirst ?<div>
