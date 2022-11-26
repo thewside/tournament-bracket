@@ -19,9 +19,6 @@ interface Bracket {
     pairs?: Array<Pair | null>
 }
 
-interface Main {
-    bracket?: Bracket
-}
 
 
 
@@ -45,7 +42,10 @@ let posY = 0
 let shiftX = 0
 let shiftY = 0
 
-export const PlayersBlock: React.FC<Main> = ({bracket}) => {
+interface ComponentMainProps {
+    bracket?: Bracket
+}
+export const PlayersBlock: React.FC<ComponentMainProps> = ({bracket}) => {
     const startBracket: Bracket | null = bracket?.children?.[0] || null
     const getBracketBlocks = () => {
         const result: Array<Bracket> | null = []

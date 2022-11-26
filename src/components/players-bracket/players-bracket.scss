@@ -1,4 +1,4 @@
-$playerWidth: 620px;
+$playerWidth: 420px;
 $playerHeight: 80px;
 $pairHeight: 200px;
 $blockColor: rgba(0, 6, 6, 0.591);
@@ -66,27 +66,7 @@ $blockColor: rgba(0, 6, 6, 0.591);
     cursor: pointer;
     border: solid 8px rgba(0, 0, 0, 0.377);
 }
+
 .pair-and-stroke {
     display: flex;
-    background-color: green;
-}
-.pair-svg-hor-stroke {
-    svg {
-        width: 100%;
-        height: 100%;
-        background-color: rgb(121, 21, 21);
-    }
-}
-.pair-svg-ver-stroke {
-    z-index: 990;
-    width: 100%;
-    margin-top: $playerHeight;
-    height: 100%;
-    background-color: rgb(77, 12, 255);
-    svg {
-        position: absolute;
-        height: 100%;
-        width: 15px;
-        background-color: rgb(77, 12, 255);
-    }
 }

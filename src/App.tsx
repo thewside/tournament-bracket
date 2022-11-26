@@ -30,6 +30,49 @@ interface AppContextInterface {
 
 export const HandlerPlayerContext = createContext<AppContextInterface | null>(null)
 
+const createPlayer = (): Player => {
+    const randomValue: number = random(1, 769)
+    const id = `${randomValue}`
+    const name: string = surnamesList.surnames[randomValue]
+    return {
+        id: id,
+        name: name,
+        position: null
+    }
+}
+
+
+const shuffle = (players: Array<object>): Array<Player> => {
+    const result: Array<Player> = [...players]
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = random(0, i)
+        const t = result[i]
+        result[i] = result[j]
+        result[j] = t
+    }
+    for(let i = 0; i < result.length; i++) {
+        result[i].position = i
+    }
+    return result as Array<Player>
+}
+
+const battle = (players: Array<Player> | null | undefined): Array<Player> | null => {
+    const result: Array<Player> = []
+    if(!players) return null
+    for (let i = 0; i < players.length; i++) {
+        const pair = [players[i], players[i + 1]]
+        if(!pair[1]) {
+            result.push(pair[0])
+        } else {
+            result.push(pair[Math.floor(random(0, 2))])
+        }
+        if(players.length > 1) {
+            i += 1
+        }
+    }
+    return result
+}
+
 export const App: React.FC = () => {
     const refInputNumberOfPlayers = useRef<HTMLInputElement | null>(null)
     const [round, setRound] = useState<number | null>(null)
@@ -39,24 +82,11 @@ export const App: React.FC = () => {
         children: []
     })
     const [players, setPlayers] = useState<Array<Player> | null>(null)
-    const [bracket, setBracket] = useState<Main>({ // | Bracket
+    const [bracket, setBracket] = useState<Main>({
         name: null,
         children: null
     })
-
     const [value, setValue] = useState<number | null>(null)
-
-    const createPlayer = (): Player => {
-        const randomValue: number = random(1, 769)
-        const id = `${randomValue}`
-        const name: string = surnamesList.surnames[randomValue]
-        return {
-            id: id,
-            name: name,
-            position: null
-        }
-    }
-
     const generatePlayers = (inputValue?: number | null) => {
         if (!inputValue) inputValue = size
         if (typeof(inputValue) === "number") {
@@ -79,20 +109,6 @@ export const App: React.FC = () => {
         setPlayers([...result])
     }
 
-    const shuffle = (players: Array<object>): Array<Player> => {
-        const result: Array<Player> = [...players]
-        for (let i = result.length - 1; i > 0; i--) {
-            const j = random(0, i)
-            const t = result[i]
-            result[i] = result[j]
-            result[j] = t
-        }
-        for(let i = 0; i < result.length; i++) {
-            result[i].position = i
-        }
-        console.log(result)
-        return result as Array<Player>
-    }
 
     const mixPlayers = (): void => {
         if(!players) return
@@ -100,22 +116,6 @@ export const App: React.FC = () => {
         setPlayers(() => [...shuffle(players)])
     }
 
-    const battle = (players: Array<Player> | null | undefined): Array<Player> | null => {
-        const result: Array<Player> = []
-        if(!players) return null
-        for (let i = 0; i < players.length; i++) {
-            const pair = [players[i], players[i + 1]]
-            if(!pair[1]) {
-                result.push(pair[0])
-            } else {
-                result.push(pair[Math.floor(random(0, 2))])
-            }
-            if(players.length > 1) {
-                i += 1
-            }
-        }
-        return result
-    }
 
     const insertResult = (): void => {
         setBracket(prev => {
